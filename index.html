@@ -5,6 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Flashcard App - Multi Day</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    #logo {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      width: 60px;
+      height: auto;
+      max-width: 80px;
+      opacity: 0.9;
+      z-index: 999;
+      object-fit: contain;
+      pointer-events: none;
+    }
+  </style>
 </head>
 <body>
   <h1>Vocabulary Flashcards</h1>
@@ -13,9 +27,9 @@
   <select id="daySelector"></select>
 
   <div class="flashcard" id="flashcard">
-    <div class="card" id="card">
-      <div class="front" id="cardFront"></div>
-      <div class="back" id="cardBack"></div>
+    <div class="flashcard-inner" id="flashcardInner">
+      <div class="flashcard-front" id="cardFront"></div>
+      <div class="flashcard-back" id="cardBack"></div>
     </div>
   </div>
 
@@ -23,6 +37,8 @@
     <button id="prevBtn">Back</button>
     <button id="nextBtn">Next</button>
   </div>
+
+  <img id="logo" src="logo.png" alt="Logo">
 
   <script>
     const sheetGIDs = {
@@ -50,12 +66,13 @@
     };
 
     const dropdown = document.getElementById("daySelector");
-    const card = document.getElementById("card");
+    const card = document.getElementById("flashcardInner");
     const front = document.getElementById("cardFront");
     const back = document.getElementById("cardBack");
     const flashcard = document.getElementById("flashcard");
     let cards = [];
     let currentIndex = 0;
+    let isFlipped = false;
 
     for (const day in sheetGIDs) {
       const option = document.createElement("option");
@@ -68,18 +85,22 @@
       loadCSV(sheetGIDs[dropdown.value]);
     });
 
-    flashcard.addEventListener("click", () => {
+    flashcard.addEventListener("click", (e) => {
+      if (e.target.tagName.toLowerCase() === 'button') return;
       card.classList.toggle("flipped");
+      isFlipped = !isFlipped;
     });
 
-    document.getElementById("nextBtn").addEventListener("click", () => {
+    document.getElementById("nextBtn").addEventListener("click", (e) => {
+      e.stopPropagation();
       currentIndex = (currentIndex + 1) % cards.length;
-      showCard(false);
+      displayCard();
     });
 
-    document.getElementById("prevBtn").addEventListener("click", () => {
+    document.getElementById("prevBtn").addEventListener("click", (e) => {
+      e.stopPropagation();
       currentIndex = (currentIndex - 1 + cards.length) % cards.length;
-      showCard(false);
+      displayCard();
     });
 
     function loadCSV(gid) {
@@ -104,7 +125,7 @@
 
           currentIndex = 0;
           if (cards.length > 0) {
-            showCard(false);
+            displayCard();
           } else {
             front.textContent = "No data available.";
             back.textContent = "";
@@ -112,27 +133,28 @@
           }
         })
         .catch(err => {
-          console.error("Failed to load CSV:", err);
           front.textContent = "Error loading data.";
           back.textContent = "";
           card.classList.remove("flipped");
         });
     }
 
-    function showCard(flip = true) {
-      if (!cards[currentIndex]) return;
+    function displayCard() {
       const [word, definition] = cards[currentIndex];
       front.textContent = word;
       back.textContent = definition;
-      if (flip) card.classList.remove("flipped");
+      if (!isFlipped) {
+        card.classList.remove("flipped");
+      } else {
+        card.classList.add("flipped");
+      }
     }
 
     dropdown.value = "Day 1";
     loadCSV(sheetGIDs["Day 1"]);
   </script>
-
-  <img id="logo" src="logo.png" alt="Logo">
 </body>
 </html>
+
 
 
