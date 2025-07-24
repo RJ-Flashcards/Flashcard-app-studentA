@@ -5,20 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Flashcard App - Multi Day</title>
   <link rel="stylesheet" href="style.css" />
-  <style>
-    #logo {
-      position: fixed;
-      bottom: 10px;
-      right: 10px;
-      width: 60px;
-      height: auto;
-      max-width: 80px;
-      opacity: 0.9;
-      z-index: 999;
-      object-fit: contain;
-      pointer-events: none;
-    }
-  </style>
 </head>
 <body>
   <h1>Vocabulary Flashcards</h1>
@@ -38,7 +24,7 @@
     <button id="nextBtn">Next</button>
   </div>
 
-  <img id="logo" src="logo.png" alt="Logo" />
+  <img id="logo" src="logo.png" alt="Logo">
 
   <script>
     const sheetGIDs = {
@@ -66,7 +52,7 @@
     };
 
     const dropdown = document.getElementById("daySelector");
-    const card = document.getElementById("flashcardInner");
+    const cardInner = document.getElementById("flashcardInner");
     const front = document.getElementById("cardFront");
     const back = document.getElementById("cardBack");
     const flashcard = document.getElementById("flashcard");
@@ -87,8 +73,8 @@
 
     flashcard.addEventListener("click", (e) => {
       if (e.target.tagName.toLowerCase() === 'button') return;
-      card.classList.toggle("flipped");
       isFlipped = !isFlipped;
+      cardInner.classList.toggle("flipped", isFlipped);
     });
 
     document.getElementById("nextBtn").addEventListener("click", (e) => {
@@ -113,24 +99,30 @@
             .split("\n")
             .slice(1)
             .map(line => {
-              const [word, definition] = line.replace(/\r/g, "").trim().split("\t");
-              return [word?.trim(), definition?.trim()];
+              const parts = line.replace(/\r/g, "").trim().split("\t");
+              if (parts.length >= 2) {
+                const word = parts[0].trim();
+                const definition = parts[1].trim();
+                return [word, definition];
+              }
+              return null;
             })
-            .filter(pair => pair[0] && pair[1]);
+            .filter(Boolean);
 
           currentIndex = 0;
+          isFlipped = false;
           if (cards.length > 0) {
             displayCard();
           } else {
             front.textContent = "No data available.";
             back.textContent = "";
-            card.classList.remove("flipped");
+            cardInner.classList.remove("flipped");
           }
         })
         .catch(err => {
           front.textContent = "Error loading data.";
           back.textContent = "";
-          card.classList.remove("flipped");
+          cardInner.classList.remove("flipped");
         });
     }
 
@@ -138,11 +130,7 @@
       const [word, definition] = cards[currentIndex];
       front.textContent = word;
       back.textContent = definition;
-      if (!isFlipped) {
-        card.classList.remove("flipped");
-      } else {
-        card.classList.add("flipped");
-      }
+      cardInner.classList.toggle("flipped", isFlipped);
     }
 
     dropdown.value = "Day 1";
