@@ -94,9 +94,11 @@ button:hover, select:hover {
   position: fixed;
   bottom: 10px;
   right: 10px;
-  width: 60px; /* You can adjust size */
+  width: 10vw; /* 10% of the viewport width */
+  max-width: 60px; /* Never get bigger than 60px */
   height: auto;
   opacity: 0.9;
   z-index: 999;
 }
+
 
