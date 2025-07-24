@@ -1,3 +1,4 @@
+
 body {
   font-family: Arial, sans-serif;
   padding: 16px;
@@ -40,7 +41,7 @@ button:hover, select:hover {
   box-sizing: border-box;
   position: relative;
   background-color: forestgreen;
-  overflow: hidden; /* ✅ Contains card faces */
+  overflow: hidden;
 }
 
 .flashcard-inner {
@@ -68,7 +69,7 @@ button:hover, select:hover {
   font-size: 24px;
   padding: 16px;
   box-sizing: border-box;
-  border-radius: inherit; /* ✅ Match outer border */
+  border-radius: inherit;
   background-color: white;
   user-select: none;
 }
@@ -100,8 +101,9 @@ button:hover, select:hover {
   opacity: 0.9;
   z-index: 999;
   object-fit: contain;
-  pointer-events: none; /* makes sure it doesn’t interfere with taps */
+  pointer-events: none;
 }
+
 
 
 
