@@ -7,16 +7,17 @@ body {
 }
 #logo {
   position: fixed;
-  bottom: 10px;
-  right: 10px;
-  width: 40px;
+  bottom: 16px;
+  right: 16px;
+  width: 70px;
+  max-width: 12vw;
   height: auto;
-  max-width: 10vw;
   opacity: 0.9;
   z-index: 999;
   object-fit: contain;
   pointer-events: none;
 }
+
 .flashcard {
   width: 90%;
   max-width: 400px;
