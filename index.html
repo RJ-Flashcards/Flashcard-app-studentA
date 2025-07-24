@@ -1,106 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flashcard App - Multi Day</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>Vocabulary Flashcards</h1>
 
-body {
-  font-family: Arial, sans-serif;
-  padding: 16px;
-  text-align: center;
-  background-color: #f4f4f4;
-  margin: 0;
-}
+  <label for="daySelector">Select Day:</label>
+  <select id="daySelector"></select>
 
-/* Controls */
-#controls {
-  margin-bottom: 20px;
-}
+  <div class="flashcard" id="flashcard">
+    <div class="card" id="card">
+      <div class="front" id="cardFront"></div>
+      <div class="back" id="cardBack"></div>
+    </div>
+  </div>
 
-select, button {
-  font-size: 18px;
-  padding: 12px 24px;
-  margin: 5px;
-  border: none;
-  border-radius: 8px;
-  background-color: #007BFF;
-  color: white;
-  cursor: pointer;
-  user-select: none;
-}
+  <div class="buttons">
+    <button id="prevBtn">Back</button>
+    <button id="nextBtn">Next</button>
+  </div>
 
-button:hover, select:hover {
-  background-color: #0056b3;
-}
+  <script>
+    const sheetGIDs = {
+      "Day 1": "0",
+      "Day 2": "1069422382",
+      "Day 3": "978107342",
+      "Day 4": "1730664010",
+      "Day 5": "925305613",
+      "Day 6": "379112084",
+      "Day 7": "616830407",
+      "Day 8": "1227399126",
+      "Day 9": "137441837",
+      "Day 10": "1319726612",
+      "Day 11": "197654488",
+      "Day 12": "1075314946",
+      "Day 13": "107667758",
+      "Day 14": "908384207",
+      "Day 15": "371348435",
+      "Day 16": "687873674",
+      "Day 17": "949162521",
+      "Day 18": "1593187186",
+      "Day 19": "1387521064",
+      "Day 20": "338379882",
+      "A-Z Word Bank": "241943186"
+    };
 
-/* Flashcard container */
-.flashcard {
-  width: 90%;
-  max-width: 400px;
-  height: 300px;
-  perspective: 1000px;
-  margin: 20px auto 40px auto;
-  cursor: pointer;
-  border: 4px solid forestgreen;
-  border-radius: 20px;
-  box-sizing: border-box;
-  position: relative;
-  background-color: forestgreen;
-  overflow: hidden;
-}
+    const dropdown = document.getElementById("daySelector");
+    const card = document.getElementById("card");
+    const front = document.getElementById("cardFront");
+    const back = document.getElementById("cardBack");
+    const flashcard = document.getElementById("flashcard");
+    let cards = [];
+    let currentIndex = 0;
 
-.flashcard-inner {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  transform-style: preserve-3d;
-  transition: transform 0.6s;
-  border-radius: 20px;
-}
+    for (const day in sheetGIDs) {
+      const option = document.createElement("option");
+      option.value = day;
+      option.textContent = day;
+      dropdown.appendChild(option);
+    }
 
-.flashcard.flipped .flashcard-inner {
-  transform: rotateY(180deg);
-}
+    dropdown.addEventListener("change", () => {
+      loadCSV(sheetGIDs[dropdown.value]);
+    });
 
-.flashcard-front,
-.flashcard-back {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  backface-visibility: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  padding: 16px;
-  box-sizing: border-box;
-  border-radius: inherit;
-  background-color: white;
-  user-select: none;
-}
+    flashcard.addEventListener("click", () => {
+      card.classList.toggle("flipped");
+    });
 
-.flashcard-back {
-  transform: rotateY(180deg);
-  background-color: #e9f5ff;
-}
+    document.getElementById("nextBtn").addEventListener("click", () => {
+      currentIndex = (currentIndex + 1) % cards.length;
+      showCard(false);
+    });
 
-/* Buttons container */
-.buttons {
-  margin-top: 10px;
-}
+    document.getElementById("prevBtn").addEventListener("click", () => {
+      currentIndex = (currentIndex - 1 + cards.length) % cards.length;
+      showCard(false);
+    });
 
-.buttons button {
-  min-width: 140px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-  transition: background-color 0.3s ease;
-}
+    function loadCSV(gid) {
+      const url = `https://docs.google.com/spreadsheets/d/e/2PACX-1vSGNFbDIBLDV2acrLKJ8omnC2bmS-lncnNAAS142PLDEMcOWouW3Lm6RJAUSiMe6Vd8VsfVYV-1p3Kg/pub?gid=${gid}&single=true&output=tsv`;
+      fetch(url)
+        .then(res => res.text())
+        .then(data => {
+          cards = data
+            .trim()
+            .split("\n")
+            .slice(1)
+            .map(line => {
+              const parts = line.replace(/\r/g, "").trim().split("\t");
+              if (parts.length >= 2) {
+                const word = parts[0].trim();
+                const definition = parts[1].trim();
+                return [word, definition];
+              }
+              return null;
+            })
+            .filter(Boolean);
 
-/* Logo in bottom right */
-#logo {
-  position: fixed;
-  bottom: 10px;
-  right: 10px;
-  width: 60px;
-  max-width: 15%;
-  height: auto;
-  opacity: 0.9;
-  z-index: 999;
-  object-fit: contain;
-  pointer-events: none;
-}
+          currentIndex = 0;
+          if (cards.length > 0) {
+            showCard(false);
+          } else {
+            front.textContent = "No data available.";
+            back.textContent = "";
+            card.classList.remove("flipped");
+          }
+        })
+        .catch(err => {
+          console.error("Failed to load CSV:", err);
+          front.textContent = "Error loading data.";
+          back.textContent = "";
+          card.classList.remove("flipped");
+        });
+    }
+
+    function showCard(flip = true) {
+      if (!cards[currentIndex]) return;
+      const [word, definition] = cards[currentIndex];
+      front.textContent = word;
+      back.textContent = definition;
+      if (flip) card.classList.remove("flipped");
+    }
+
+    dropdown.value = "Day 1";
+    loadCSV(sheetGIDs["Day 1"]);
+  </script>
+
+  <img id="logo" src="logo.png" alt="Logo">
+</body>
+</html>
+
 
