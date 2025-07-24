@@ -38,7 +38,7 @@
     <button id="nextBtn">Next</button>
   </div>
 
-  <img id="logo" src="logo.png" alt="Logo">
+  <img id="logo" src="logo.png" alt="Logo" />
 
   <script>
     const sheetGIDs = {
@@ -113,15 +113,10 @@
             .split("\n")
             .slice(1)
             .map(line => {
-              const parts = line.replace(/\r/g, "").trim().split("\t");
-              if (parts.length >= 2) {
-                const word = parts[0].trim();
-                const definition = parts[1].trim();
-                return [word, definition];
-              }
-              return null;
+              const [word, definition] = line.replace(/\r/g, "").trim().split("\t");
+              return [word?.trim(), definition?.trim()];
             })
-            .filter(Boolean);
+            .filter(pair => pair[0] && pair[1]);
 
           currentIndex = 0;
           if (cards.length > 0) {
@@ -155,6 +150,7 @@
   </script>
 </body>
 </html>
+
 
 
 
