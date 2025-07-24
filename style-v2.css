@@ -89,3 +89,14 @@ button:hover, select:hover {
   transition: background-color 0.3s ease;
 }
 
+/* Logo in bottom right */
+#logo {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  width: 60px; /* You can adjust size */
+  height: auto;
+  opacity: 0.9;
+  z-index: 999;
+}
+
