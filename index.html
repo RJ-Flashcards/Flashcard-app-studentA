@@ -97,7 +97,7 @@
     });
 
     function loadCSV(gid) {
-      const url = `https://docs.google.com/spreadsheets/d/e/2PACX-1vSCTrCpXAGkPD05zFs9VCgiSG20kYGXQk4LBhgpgfUDfLkW292go_Oofva97vL0Jn8FZZXt6X2J8-SP/pub?gid=${gid}&single=true&output=tsv`;
+      const url = `https://docs.google.com/spreadsheets/d/e/2PACX-1vSCTrCpXAGkPD05zFs9VCgiSG20kYGXQk4LBhgpgfUDfLkW292go_Oofva97vL0Jn8FZZXt6X2J8-SP/pub?output=tsv`;
       fetch(url)
         .then(res => res.text())
         .then(data => {
