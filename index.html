@@ -26,128 +26,124 @@
 
   <img id="logo" src="logo.png" alt="Logo">
 
-  <script>
-    const sheetGIDs = {
-      "Day 1": "0",
-      "Day 2": "1069422382",
-      "Day 3": "978107342",
-      "Day 4": "1730664010",
-      "Day 5": "925305613",
-      "Day 6": "379112084",
-      "Day 7": "616830407",
-      "Day 8": "1227399126",
-      "Day 9": "137441837",
-      "Day 10": "1319726612",
-      "Day 11": "197654488",
-      "Day 12": "1075314946",
-      "Day 13": "107667758",
-      "Day 14": "908384207",
-      "Day 15": "371348435",
-      "Day 16": "687873674",
-      "Day 17": "949162521",
-      "Day 18": "1593187186",
-      "Day 19": "1387521064",
-      "Day 20": "338379882",
-      "Day 21": "1018851803",
-      "Day 22": "1886085882",
-      "Day 23": "909447727",
-      "Day 24": "95175758",
-      "A-Z Word Bank": "241943186",
-      "Everyday Phrasal Verbs": "104187808",
-      "Business Phrasal Verbs": "887218085",
-      "Country Information": "1337097424",
-    };
+ <script>
+  // 1) Map of tab names → GIDs
+  const sheetGIDs = {
+    "Day 1": "0",
+    "Day 2": "1069422382",
+    "Day 3": "978107342",
+    "Day 4": "1730664010",
+    "Day 5": "925305613",
+    "Day 6": "379112084",
+    "Day 7": "616830407",
+    "Day 8": "1227399126",
+    "Day 9": "137441837",
+    "Day 10": "1319726612",
+    "Day 11": "197654488",
+    "Day 12": "1075314946",
+    "Day 13": "107667758",
+    "Day 14": "908384207",
+    "Day 15": "371348435",
+    "Day 16": "687873674",
+    "Day 17": "949162521",
+    "Day 18": "1593187186",
+    "Day 19": "1387521064",
+    "Day 20": "338379882",
+    "Day 21": "1018851803",
+    "Day 22": "1886085882",
+    "Day 23": "909447727",
+    "Day 24": "95175758",
+    "A-Z Word Bank": "241943186",
+    "Everyday Phrasal Verbs": "104187808",
+    "Business Phrasal Verbs": "887218085",
+    "Country Information": "1337097424"
+  };
 
-    const dropdown = document.getElementById("daySelector");
-    const cardInner = document.getElementById("flashcardInner");
-    const front = document.getElementById("cardFront");
-    const back = document.getElementById("cardBack");
-    const flashcard = document.getElementById("flashcard");
-    let cards = [];
-    let currentIndex = 0;
-    let isFlipped = false;
+  // 2) Grab your UI elements
+  const dropdown  = document.getElementById("daySelector");
+  const flashcard = document.getElementById("flashcard");
+  const cardInner = document.getElementById("flashcardInner");
+  const front     = document.getElementById("cardFront");
+  const back      = document.getElementById("cardBack");
+  const prevBtn   = document.getElementById("prevBtn");
+  const nextBtn   = document.getElementById("nextBtn");
 
-    for (const day in sheetGIDs) {
-      const option = document.createElement("option");
-      option.value = day;
-      option.textContent = day;
-      dropdown.appendChild(option);
-    }
+  let cards = [], currentIndex = 0, isFlipped = false;
 
-    dropdown.addEventListener("change", () => {
-      loadCSV(sheetGIDs[dropdown.value]);
-    });
+  // 3) Populate the dropdown
+  for (const name in sheetGIDs) {
+    const opt = document.createElement("option");
+    opt.value = name;
+    opt.textContent = name;
+    dropdown.appendChild(opt);
+  }
 
-    flashcard.addEventListener("click", (e) => {
-      if (e.target.tagName.toLowerCase() === 'button') return;
+  // 4) Event handlers
+  dropdown.addEventListener("change", () => loadCSV(sheetGIDs[dropdown.value]));
+  flashcard.addEventListener("click", e => {
+    if (!e.target.closest("button")) {
       isFlipped = !isFlipped;
       cardInner.classList.toggle("flipped", isFlipped);
-    });
+    }
+  });
+  nextBtn.addEventListener("click", e => {
+    e.stopPropagation();
+    currentIndex = (currentIndex + 1) % cards.length;
+    displayCard();
+  });
+  prevBtn.addEventListener("click", e => {
+    e.stopPropagation();
+    currentIndex = (currentIndex - 1 + cards.length) % cards.length;
+    displayCard();
+  });
 
-    document.getElementById("nextBtn").addEventListener("click", (e) => {
-      e.stopPropagation();
-      currentIndex = (currentIndex + 1) % cards.length;
-      displayCard();
-    });
+  // 5) Loader: inject gid, request TSV
+  function loadCSV(gid) {
+    const url = 
+      `https://docs.google.com/spreadsheets/d/e/2PACX-1vSCTrCpXAGkPD05zFs9VCgiSG20kYGXQk4LBhgpgfUDfLkW292go_Oofva97vL0Jn8FZZXt6X2J8-SP` +
+      `/pub?gid=${gid}&single=true&output=tsv`;
 
-    document.getElementById("prevBtn").addEventListener("click", (e) => {
-      e.stopPropagation();
-      currentIndex = (currentIndex - 1 + cards.length) % cards.length;
-      displayCard();
-    });
+    fetch(url)
+      .then(res => res.text())
+      .then(tsv => {
+        cards = tsv
+          .trim()
+          .split("\n")
+          .slice(1)
+          .map(line => {
+            const parts = line.replace(/\r/g, "").split("\t");
+            return parts.length >= 2
+              ? [parts[0].trim(), parts[1].trim()]
+              : null;
+          })
+          .filter(Boolean);
 
-    function loadCSV(gid) {
-    -  const url = `https://docs.google.com/spreadsheets/d/e/2PACX-1vSCTrCpXAGkPD05zFs9VCgiSG20kYGXQk4LBhgpgfUDfLkW292go_Oofva97vL0Jn8FZZXt6X2J8-SP/pub?output=tsv`;
-    +  const url = `https://docs.google.com/spreadsheets/d/e/2PACX-1vSCTrCpXAGkPD05zFs9VCgiSG20kYGXQk4LBhgpgfUDfLkW292go_Oofva97vL0Jn8FZZXt6X2J8-SP/pub?gid=${gid}&single=true&output=tsv`;
-   fetch(url)
-     .then(res => res.text())
-     .then(data => {
-
-          cards = data
-            .trim()
-            .split("\n")
-            .slice(1)
-            .map(line => {
-              const parts = line.replace(/\r/g, "").trim().split("\t");
-              if (parts.length >= 2) {
-                const word = parts[0].trim();
-                const definition = parts[1].trim();
-                return [word, definition];
-              }
-              return null;
-            })
-            .filter(Boolean);
-
-          currentIndex = 0;
-          isFlipped = false;
-          if (cards.length > 0) {
-            displayCard();
-          } else {
-            front.textContent = "No data available.";
-            back.textContent = "";
-            cardInner.classList.remove("flipped");
-          }
-        })
-        .catch(err => {
-          front.textContent = "Error loading data.";
+        currentIndex = 0;
+        isFlipped = false;
+        if (cards.length) {
+          displayCard();
+        } else {
+          front.textContent = "No data available.";
           back.textContent = "";
           cardInner.classList.remove("flipped");
-        });
-    }
+        }
+      })
+      .catch(() => {
+        front.textContent = "Error loading data.";
+        back.textContent = "";
+        cardInner.classList.remove("flipped");
+      });
+  }
 
-    function displayCard() {
-      const [word, definition] = cards[currentIndex];
-      front.textContent = word;
-      back.textContent = definition;
-      cardInner.classList.toggle("flipped", isFlipped);
-    }
+  // 6) Render the current card
+  function displayCard() {
+    const [word, definition] = cards[currentIndex];
+    front.textContent = word;
+    back.textContent  = definition;
+    cardInner.classList.toggle("flipped", isFlipped);
+  }
 
-    dropdown.value = "Day 1";
-    loadCSV(sheetGIDs["Day 1"]);
-  </script>
-</body>
-</html>
-
-
-
-
+  // 7) Initialize on load
+  dropdown.value = "Day 1";
+  loadCSV(sheetGIDs["Day 1"]);
+</script>
