@@ -23,7 +23,7 @@
     <button id="prevBtn">Back</button>
     <button id="nextBtn">Next</button>
   </div>
-
+  
   <img id="logo" src="logo.png" alt="Logo">
 
   <script>
@@ -98,42 +98,40 @@
     });
 
     // 5) Loader: inject gid, request TSV
-    function loadCSV(gid) {
-      const url = 
-        `https://docs.google.com/spreadsheets/d/e/2PACX-1vSCTrCpXAGkPD05zFs9VCgiSG20kYGXQk4LBhgpgfUDfLkW292go_Oofva97vL0Jn8FZZXt6X2J8-SP` +
-        `/pub?gid=${gid}&single=true&output=tsv`;
+function loadCSV(gid) {
+  // ← paste your simplified base URL here:
+  const base = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSCTrCpXAGkPD05zFs9VCgiSG20kYGXQk4LBhgpgfUDfLkW292go_Oofva97vL0Jn8FZZXt6X2J8-SP/pub";
+  const url  = `${base}?gid=${gid}&single=true&output=csv`;
 
-      fetch(url)
-        .then(res => res.text())
-        .then(tsv => {
-          cards = tsv
-            .trim()
-            .split("\n")
-            .slice(1)
-            .map(line => {
-              const parts = line.replace(/\r/g, "").split("\t");
-              return parts.length >= 2
-                ? [parts[0].trim(), parts[1].trim()]
-                : null;
-            })
-            .filter(Boolean);
-
-          currentIndex = 0;
-          isFlipped = false;
-          if (cards.length) {
-            displayCard();
-          } else {
-            front.textContent = "No data available.";
-            back.textContent = "";
-            cardInner.classList.remove("flipped");
-          }
+  fetch(url)
+    .then(res => res.text())
+    .then(csv => {
+      cards = csv
+        .trim()
+        .split("\n")
+        .slice(1)
+        .map(line => {
+          const [word, def] = line.split(",");
+          return word && def ? [word.trim(), def.trim()] : null;
         })
-        .catch(() => {
-          front.textContent = "Error loading data.";
-          back.textContent = "";
-          cardInner.classList.remove("flipped");
-        });
-    }
+        .filter(Boolean);
+
+      currentIndex = 0;
+      isFlipped = false;
+      if (cards.length) displayCard();
+      else {
+        front.textContent = "No data available.";
+        back.textContent  = "";
+        cardInner.classList.remove("flipped");
+      }
+    })
+    .catch(_ => {
+      front.textContent = "Error loading data.";
+      back.textContent  = "";
+      cardInner.classList.remove("flipped");
+    });
+}
+
 
     // 6) Render the current card
     function displayCard() {
